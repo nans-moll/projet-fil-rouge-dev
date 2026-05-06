@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}À propos — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-lg">
+    <h1>À propos de {{ SITE_NAME }}</h1>
+    <p class="lead">
+        {{ SITE_NAME }} est un groupe immobilier français implanté à Aix-en-Provence,
+        avec un réseau de 12 agences réparties sur tout le territoire.
+    </p>
+
+    <h2>Notre mission</h2>
+    <p>
+        Faciliter et sécuriser l'achat, la vente et la location de biens
+        résidentiels et professionnels en proposant à nos clients une plateforme
+        moderne, transparente et accessible.
+    </p>
+
+    <h2>Nos valeurs</h2>
+    <ul>
+        <li><strong>Proximité</strong> — un interlocuteur dédié dans chaque agence.</li>
+        <li><strong>Transparence</strong> — informations détaillées et prix affichés clairement.</li>
+        <li><strong>Innovation</strong> — outils d'analyse de marché et aide à la décision.</li>
+    </ul>
+
+    <h2>Notre réseau</h2>
+    <p>
+        12 agences locales et un siège social à Aix-en-Provence,
+        connectés via un réseau privé sécurisé pour garantir la fiabilité
+        et la confidentialité des données.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ transaction.reference }} — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+    <a href="{% url 'transactions:agent_transaction_list' %}" class="text-sm text-primary-500 hover:underline mb-4 inline-block">
+        ← Retour aux transactions
+    </a>
+
+    <header class="mb-6 flex justify-between items-start flex-wrap gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ transaction.reference }}</h1>
+            <p class="text-gray-600 mt-1">{{ transaction.property.title }}</p>
+        </div>
+        <a href="{% url 'transactions:agent_transaction_update' transaction.pk %}"
+           class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            ✎ Modifier
+        </a>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Statut</p>
+            <p class="text-xl font-bold text-primary-500">{{ transaction.get_status_display }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Prix offert</p>
+            <p class="text-xl font-bold">{{ transaction.offer_price|floatformat:0|intcomma }} €</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Avancement</p>
+            <p class="text-xl font-bold">{{ transaction.progress_percent }}%</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="font-semibold text-lg mb-3">Acteurs</h2>
+            <dl class="space-y-2 text-sm">
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Acheteur</dt><dd class="col-span-2">{{ transaction.buyer.get_full_name }} ({{ transaction.buyer.email }})</dd></div>
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Vendeur</dt><dd class="col-span-2">{% if transaction.seller %}{{ transaction.seller.get_full_name }}{% else %}—{% endif %}</dd></div>
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Agent</dt><dd class="col-span-2">{{ transaction.agent.get_full_name }}</dd></div>
+            </dl>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="font-semibold text-lg mb-3">Dates & montants</h2>
+            <dl class="space-y-2 text-sm">
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Offre</dt><dd class="col-span-2">{{ transaction.offer_date|date:"d/m/Y" }}</dd></div>
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Signature prévue</dt><dd class="col-span-2">{% if transaction.expected_signature_date %}{{ transaction.expected_signature_date|date:"d/m/Y" }}{% else %}—{% endif %}</dd></div>
+                <div class="grid grid-cols-3"><dt class="text-gray-500">Commission</dt><dd class="col-span-2">{{ transaction.agency_commission|floatformat:0|intcomma }} €</dd></div>
+                {% if transaction.final_price %}
+                    <div class="grid grid-cols-3"><dt class="text-gray-500">Prix final</dt><dd class="col-span-2">{{ transaction.final_price|floatformat:0|intcomma }} €</dd></div>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+
+    <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Étapes du dossier</h2>
+            <a href="{% url 'transactions:agent_add_step' transaction.pk %}"
+               class="text-sm bg-accent hover:bg-yellow-600 text-white font-semibold px-3 py-1 rounded">
+                + Étape
+            </a>
+        </div>
+        {% if transaction.steps.all %}
+            <ol class="relative border-l-2 border-primary-200 ml-3 space-y-6">
+                {% for step in transaction.steps.all %}
+                    <li class="ml-6">
+                        <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full
+                                     {% if step.is_completed %}bg-green-500{% else %}bg-gray-300{% endif %} text-white text-xs">
+                            {% if step.is_completed %}✓{% else %}…{% endif %}
+                        </span>
+                        <h3 class="font-semibold">{{ step.title }}</h3>
+                        {% if step.description %}<p class="text-sm text-gray-600">{{ step.description }}</p>{% endif %}
+                        <p class="text-xs text-gray-500 mt-1">
+                            {% if step.is_completed %}Validée le {{ step.completed_at|date:"d/m/Y" }}{% else %}En attente{% endif %}
+                            {% if not step.visible_to_client %}— interne{% endif %}
+                        </p>
+                    </li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p class="text-sm text-gray-500">Aucune étape pour le moment.</p>
+        {% endif %}
+    </section>
+
+    {% if transaction.notes %}
+        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <h3 class="font-semibold text-sm text-yellow-900 mb-1">Notes internes</h3>
+            <p class="text-sm text-gray-800 whitespace-pre-line">{{ transaction.notes }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

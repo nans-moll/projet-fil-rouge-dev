@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ agency.name }} — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+        {% if agency.is_headquarters %}
+            <span class="inline-block bg-accent text-white text-xs font-semibold px-3 py-1 rounded mb-2">
+                Siège social
+            </span>
+        {% endif %}
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{{ agency.name }}</h1>
+        <p class="text-gray-600">📍 {{ agency.address }}, {{ agency.postal_code }} {{ agency.city }}</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-3">À propos</h2>
+            <p class="text-gray-700 whitespace-pre-line">
+                {{ agency.description|default:"Notre équipe vous accompagne dans tous vos projets immobiliers." }}
+            </p>
+        </div>
+        <aside class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-3">Contact</h2>
+            <ul class="space-y-2 text-sm text-gray-700">
+                <li>📞 <a href="tel:{{ agency.phone }}" class="hover:text-primary-500">{{ agency.phone }}</a></li>
+                <li>✉ <a href="mailto:{{ agency.email }}" class="hover:text-primary-500">{{ agency.email }}</a></li>
+                {% if agency.website %}
+                    <li>🌐 <a href="{{ agency.website }}" class="hover:text-primary-500" rel="noopener">{{ agency.website }}</a></li>
+                {% endif %}
+            </ul>
+        </aside>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Biens proposés par cette agence</h2>
+    {% if properties %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for property in properties %}
+                {% include "properties/_card.html" with property=property %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-500 text-center py-8">Cette agence n'a pas encore de biens en ligne.</p>
+    {% endif %}
+</div>
+{% endblock %}

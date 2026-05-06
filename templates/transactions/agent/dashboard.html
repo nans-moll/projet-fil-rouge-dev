@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Tableau de bord agent — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="mb-8 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Tableau de bord</h1>
+            <p class="text-gray-600 mt-1">
+                {% if user.agency %}Agence : {{ user.agency.name }}{% else %}Vue globale{% endif %}
+            </p>
+        </div>
+        <nav class="flex gap-2 flex-wrap" aria-label="Actions agent">
+            <a href="{% url 'properties:agent_create' %}"
+               class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+                + Nouveau bien
+            </a>
+            <a href="{% url 'properties:agent_list' %}"
+               class="bg-white border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50">
+                Mes biens
+            </a>
+            <a href="{% url 'transactions:agent_visit_list' %}"
+               class="bg-white border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50">
+                Visites
+            </a>
+            <a href="{% url 'transactions:agent_transaction_list' %}"
+               class="bg-white border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50">
+                Transactions
+            </a>
+            <a href="{% url 'analytics:dashboard' %}"
+               class="bg-white border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50">
+                📊 Analytics
+            </a>
+        </nav>
+    </header>
+
+    {# KPIs #}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Biens au catalogue</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_properties }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Disponibles</p>
+            <p class="text-3xl font-bold text-primary-500 mt-1">{{ available_properties }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Vendus</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ sold_properties }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Vues totales</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ total_views|intcomma }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {# Visites en attente #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Visites en attente</h2>
+                <a href="{% url 'transactions:agent_visit_list' %}" class="text-sm text-primary-500 hover:underline">
+                    Voir tout →
+                </a>
+            </div>
+            {% if pending_visits %}
+                <ul class="divide-y divide-gray-100">
+                    {% for v in pending_visits %}
+                        <li class="py-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ v.full_name }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ v.property.reference }} — {{ v.property.title|truncatechars:30 }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {% if v.preferred_date %}Souhaitée : {{ v.preferred_date|date:"d/m/Y" }}{% endif %}
+                                    </p>
+                                </div>
+                                <a href="{% url 'transactions:agent_visit_update' v.pk %}"
+                                   class="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded">
+                                    Traiter
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucune visite en attente. 🎉</p>
+            {% endif %}
+        </section>
+
+        {# Transactions actives #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Transactions actives</h2>
+            {% if active_transactions %}
+                <ul class="divide-y divide-gray-100">
+                    {% for tx in active_transactions %}
+                        <li class="py-3 flex justify-between">
+                            <div>
+                                <a href="{% url 'transactions:agent_transaction_detail' tx.pk %}" class="font-medium text-gray-900 hover:text-primary-500">
+                                    {{ tx.reference }}
+                                </a>
+                                <p class="text-xs text-gray-500">{{ tx.property.title|truncatechars:30 }} — {{ tx.buyer.get_full_name }}</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 self-start">
+                                {{ tx.get_status_display }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucune transaction active.</p>
+            {% endif %}
+        </section>
+
+        {# Demandes d'info #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Demandes d'informations</h2>
+            {% if pending_infos %}
+                <ul class="divide-y divide-gray-100">
+                    {% for ir in pending_infos %}
+                        <li class="py-3">
+                            <p class="font-medium text-gray-900">{{ ir.full_name }}</p>
+                            <p class="text-xs text-gray-500 mb-1">
+                                {{ ir.property.reference }} — {{ ir.property.title|truncatechars:30 }}
+                            </p>
+                            <p class="text-sm text-gray-700 italic">"{{ ir.question|truncatechars:100 }}"</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucune demande d'info en attente.</p>
+            {% endif %}
+        </section>
+
+        {# Répartition par type #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Répartition par type de bien</h2>
+            <ul class="space-y-2">
+                {% for t in by_type %}
+                    <li class="flex justify-between items-center text-sm">
+                        <span class="text-gray-700">{{ t.property_type }}</span>
+                        <div class="flex items-center gap-2 flex-1 ml-4">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary-500 h-2 rounded-full"
+                                     style="width: {% widthratio t.count total_properties 100 %}%"></div>
+                            </div>
+                            <span class="font-semibold text-gray-900 w-10 text-right">{{ t.count }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="text-sm text-gray-600 mt-4 pt-4 border-t">
+                Prix moyen au catalogue : <strong>{{ avg_price|floatformat:0|intcomma }} €</strong>
+            </p>
+        </section>
+    </div>
+</div>
+{% endblock %}

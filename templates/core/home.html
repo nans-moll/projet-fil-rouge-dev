@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ SITE_NAME }} — Trouvez votre futur chez-vous{% endblock %}
+
+{% block content %}
+{# ---------- HERO + RECHERCHE ---------- #}
+<section class="relative bg-gradient-to-br from-primary-500 to-primary-700 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+        <div class="max-w-3xl">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                Trouvez le bien qui vous ressemble
+            </h1>
+            <p class="text-lg md:text-xl text-primary-100 mb-8">
+                {{ SITE_NAME }} vous accompagne dans tous vos projets immobiliers
+                grâce à un réseau de {{ agencies_count }} agences en France.
+            </p>
+
+            {# Barre de recherche #}
+            <form action="{% url 'properties:list' %}" method="get"
+                  class="bg-white p-4 rounded-xl shadow-lg" role="search">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="md:col-span-2">
+                        <label for="q-input" class="sr-only">Recherche</label>
+                        <input id="q-input" type="search" name="query"
+                               placeholder="Ville, code postal, mot-clé…"
+                               class="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+                    </div>
+                    <div>
+                        <label for="t-input" class="sr-only">Transaction</label>
+                        <select id="t-input" name="transaction_type"
+                                class="w-full px-4 py-3 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
+                            <option value="">Tout type</option>
+                            <option value="SALE">Achat</option>
+                            <option value="RENT">Location</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                            class="bg-accent hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg transition">
+                        Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{# ---------- KPIs ---------- #}
+<section class="bg-white border-b" aria-label="Chiffres clés">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-3 gap-8 text-center">
+        <div>
+            <p class="text-3xl md:text-4xl font-bold text-primary-500">{{ properties_count|intcomma }}</p>
+            <p class="text-sm text-gray-600 mt-1">Biens disponibles</p>
+        </div>
+        <div>
+            <p class="text-3xl md:text-4xl font-bold text-primary-500">{{ agencies_count }}</p>
+            <p class="text-sm text-gray-600 mt-1">Agences partenaires</p>
+        </div>
+        <div>
+            <p class="text-3xl md:text-4xl font-bold text-primary-500">{{ cities_count }}</p>
+            <p class="text-sm text-gray-600 mt-1">Villes couvertes</p>
+        </div>
+    </div>
+</section>
+
+{# ---------- BIENS À LA UNE ---------- #}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900">Nos biens à la une</h2>
+            <p class="text-gray-600 mt-2">Découvrez les coups de cœur sélectionnés par nos agents.</p>
+        </div>
+        <a href="{% url 'properties:list' %}" class="hidden md:inline-block text-primary-500 hover:text-primary-600 font-semibold">
+            Voir tous les biens →
+        </a>
+    </div>
+
+    {% if featured_properties %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for property in featured_properties %}
+                {% include "properties/_card.html" with property=property %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500 py-12">Aucun bien à la une pour le moment.</p>
+    {% endif %}
+</section>
+
+{# ---------- CTA ---------- #}
+<section class="bg-gray-100 py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Vous souhaitez vendre ?</h2>
+        <p class="text-gray-700 mb-8">
+            Contactez l'un de nos agents pour une estimation gratuite et personnalisée de votre bien.
+        </p>
+        <a href="{% url 'core:contact' %}" class="inline-block bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-lg transition">
+            Demander une estimation
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Mes biens — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="mb-6 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Mes biens</h1>
+        <a href="{% url 'properties:agent_create' %}"
+           class="bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+            + Nouveau bien
+        </a>
+    </header>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left">
+                <tr>
+                    <th scope="col" class="px-4 py-3 font-semibold">Référence</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Titre</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Ville</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Type</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Prix</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Statut</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Vues</th>
+                    <th scope="col" class="px-4 py-3 font-semibold text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for p in properties %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-mono text-xs">{{ p.reference }}</td>
+                        <td class="px-4 py-3 font-medium">{{ p.title|truncatechars:35 }}</td>
+                        <td class="px-4 py-3">{{ p.city }}</td>
+                        <td class="px-4 py-3">{{ p.get_property_type_display }}</td>
+                        <td class="px-4 py-3">{{ p.price|floatformat:0|intcomma }} €</td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs px-2 py-1 rounded
+                                {% if p.status == 'AVAILABLE' %}bg-green-100 text-green-800
+                                {% elif p.status == 'SOLD' %}bg-gray-200 text-gray-700
+                                {% elif p.status == 'UNDER_OFFER' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ p.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">{{ p.views_count }}</td>
+                        <td class="px-4 py-3 text-right space-x-2">
+                            <a href="{{ p.get_absolute_url }}" class="text-gray-600 hover:text-primary-500" aria-label="Voir">👁</a>
+                            <a href="{% url 'properties:agent_update' p.pk %}" class="text-primary-500 hover:underline">Modifier</a>
+                            <a href="{% url 'properties:agent_delete' p.pk %}" class="text-red-600 hover:underline">Supprimer</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                            Aucun bien pour le moment.
+                            <a href="{% url 'properties:agent_create' %}" class="text-primary-500 hover:underline">Créer le premier ?</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Pagination #}
+    {% if is_paginated %}
+        <nav class="mt-6 flex justify-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded">Précédent</a>
+            {% endif %}
+            <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded">Suivant</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

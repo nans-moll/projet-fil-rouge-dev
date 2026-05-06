@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dossier {{ transaction.reference }} — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12">
+    <a href="{% url 'transactions:client_dashboard' %}" class="text-sm text-primary-500 hover:underline mb-4 inline-block">
+        ← Retour à mon espace
+    </a>
+
+    <header class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Dossier {{ transaction.reference }}</h1>
+        <p class="text-gray-600 mt-1">{{ transaction.property.title }}</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Statut</p>
+            <p class="text-xl font-bold text-primary-500">{{ transaction.get_status_display }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Montant proposé</p>
+            <p class="text-xl font-bold text-gray-900">{{ transaction.offer_price|floatformat:0|intcomma }} €</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Avancement</p>
+            <p class="text-xl font-bold text-gray-900">{{ transaction.progress_percent }}%</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+        <h2 class="text-xl font-bold mb-4">Avancement</h2>
+        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+            <div class="bg-primary-500 h-3 rounded-full transition-all" style="width: {{ transaction.progress_percent }}%"
+                 role="progressbar" aria-valuenow="{{ transaction.progress_percent }}"
+                 aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+
+    <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h2 class="text-xl font-bold mb-4">Étapes du dossier</h2>
+        {% if steps %}
+            <ol class="relative border-l-2 border-primary-200 ml-3 space-y-6">
+                {% for step in steps %}
+                    <li class="ml-6">
+                        <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full
+                                     {% if step.is_completed %}bg-green-500{% else %}bg-gray-300{% endif %} text-white text-xs">
+                            {% if step.is_completed %}✓{% else %}…{% endif %}
+                        </span>
+                        <h3 class="font-semibold text-gray-900">{{ step.title }}</h3>
+                        {% if step.description %}
+                            <p class="text-sm text-gray-600 mt-1">{{ step.description }}</p>
+                        {% endif %}
+                        {% if step.completed_at %}
+                            <p class="text-xs text-gray-500 mt-1">Validée le {{ step.completed_at|date:"d/m/Y" }}</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p class="text-sm text-gray-500">Pas d'étape enregistrée pour le moment.</p>
+        {% endif %}
+    </section>
+
+    <div class="mt-8 bg-gray-50 rounded-xl p-6">
+        <h3 class="font-semibold mb-2">Votre interlocuteur</h3>
+        <p class="text-sm text-gray-700">{{ transaction.agent.get_full_name }}</p>
+        <p class="text-sm text-gray-600">{{ transaction.agent.email }}</p>
+        {% if transaction.agent.phone %}<p class="text-sm text-gray-600">{{ transaction.agent.phone }}</p>{% endif %}
+    </div>
+</div>
+{% endblock %}

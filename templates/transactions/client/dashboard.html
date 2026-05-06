@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Mon espace — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Bonjour {{ user.first_name|default:user.username }} 👋</h1>
+            <p class="text-gray-600 mt-1">Voici un aperçu de vos démarches en cours.</p>
+        </div>
+        <a href="{% url 'accounts:profile' %}" class="text-sm text-primary-500 hover:underline">
+            ⚙ Mon profil
+        </a>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {# Demandes de visite #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Mes demandes de visite</h2>
+                <span class="bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded">
+                    {{ visit_requests|length }}
+                </span>
+            </div>
+            {% if visit_requests %}
+                <ul class="divide-y divide-gray-100">
+                    {% for vr in visit_requests %}
+                        <li class="py-3 flex justify-between items-center">
+                            <div>
+                                <a href="{{ vr.property.get_absolute_url }}" class="font-medium text-gray-900 hover:text-primary-500">
+                                    {{ vr.property.title|truncatechars:40 }}
+                                </a>
+                                <p class="text-xs text-gray-500">
+                                    {{ vr.property.city }} —
+                                    {% if vr.preferred_date %}souhaitée le {{ vr.preferred_date|date:"d/m/Y" }}{% endif %}
+                                </p>
+                            </div>
+                            <span class="text-xs font-semibold px-2 py-1 rounded
+                                {% if vr.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif vr.status == 'CONFIRMED' %}bg-blue-100 text-blue-800
+                                {% elif vr.status == 'DONE' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ vr.get_status_display }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucune demande de visite pour le moment.</p>
+            {% endif %}
+        </section>
+
+        {# Transactions en cours #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Mes dossiers</h2>
+                <span class="bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded">
+                    {{ transactions|length }}
+                </span>
+            </div>
+            {% if transactions %}
+                <ul class="space-y-4">
+                    {% for tx in transactions %}
+                        <li class="border border-gray-100 rounded-lg p-4">
+                            <div class="flex justify-between mb-2">
+                                <a href="{% url 'transactions:client_transaction_detail' tx.pk %}" class="font-semibold text-gray-900 hover:text-primary-500">
+                                    {{ tx.reference }}
+                                </a>
+                                <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                    {{ tx.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">{{ tx.property.title }}</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary-500 h-2 rounded-full" style="width: {{ tx.progress_percent }}%"
+                                     role="progressbar" aria-valuenow="{{ tx.progress_percent }}"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ tx.progress_percent }}% — Agent : {{ tx.agent.get_full_name }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucun dossier en cours.</p>
+            {% endif %}
+        </section>
+
+        {# Demandes d'info #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Mes demandes d'informations</h2>
+            {% if info_requests %}
+                <ul class="divide-y divide-gray-100">
+                    {% for ir in info_requests %}
+                        <li class="py-3">
+                            <a href="{{ ir.property.get_absolute_url }}" class="font-medium text-gray-900 hover:text-primary-500">
+                                {{ ir.property.title|truncatechars:40 }}
+                            </a>
+                            <p class="text-xs text-gray-500">{{ ir.created_at|date:"d/m/Y" }} — {% if ir.answered_at %}Répondu{% else %}En attente{% endif %}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">Aucune demande d'informations.</p>
+            {% endif %}
+        </section>
+
+        {# Favoris #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Mes favoris ♥</h2>
+            {% if favorites %}
+                <div class="grid grid-cols-2 gap-3">
+                    {% for fav in favorites %}
+                        <a href="{{ fav.property.get_absolute_url }}" class="block group">
+                            {% if fav.property.main_photo %}
+                                <img src="{{ fav.property.main_photo.image.url }}" alt=""
+                                     class="aspect-[4/3] w-full object-cover rounded-lg" loading="lazy">
+                            {% else %}
+                                <div class="aspect-[4/3] bg-gray-200 rounded-lg"></div>
+                            {% endif %}
+                            <p class="text-sm font-medium mt-2 group-hover:text-primary-500">{{ fav.property.title|truncatechars:30 }}</p>
+                            <p class="text-xs text-gray-500">{{ fav.property.price|floatformat:0|intcomma }} €</p>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-sm text-gray-500 py-4">
+                    <a href="{% url 'properties:list' %}" class="text-primary-500 hover:underline">Parcourez nos biens</a>
+                    et ajoutez-les à vos favoris.
+                </p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

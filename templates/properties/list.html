@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load humanize widget_tweaks %}
+
+{% block title %}Nos biens — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Tous nos biens immobiliers</h1>
+        <p class="text-gray-600">{{ total_results }} bien{{ total_results|pluralize }} disponible{{ total_results|pluralize }}</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+        {# ---------- FILTRES ---------- #}
+        <aside class="lg:col-span-1" aria-label="Filtres de recherche">
+            <form method="get" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-20 space-y-4">
+                <h2 class="font-semibold text-lg text-gray-900 mb-2">Filtrer</h2>
+
+                <div>
+                    <label for="{{ search_form.query.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Recherche
+                    </label>
+                    {{ search_form.query|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" }}
+                </div>
+
+                <div>
+                    <label for="{{ search_form.transaction_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Transaction
+                    </label>
+                    {{ search_form.transaction_type|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <div>
+                    <label for="{{ search_form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Type de bien
+                    </label>
+                    {{ search_form.property_type|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <div>
+                    <label for="{{ search_form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Ville
+                    </label>
+                    {{ search_form.city|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <fieldset>
+                    <legend class="text-sm font-medium text-gray-700 mb-1">Budget (€)</legend>
+                    <div class="grid grid-cols-2 gap-2">
+                        {{ search_form.min_price|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg"|attr:"placeholder:Min" }}
+                        {{ search_form.max_price|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg"|attr:"placeholder:Max" }}
+                    </div>
+                </fieldset>
+
+                <div>
+                    <label for="{{ search_form.min_surface.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Surface min (m²)
+                    </label>
+                    {{ search_form.min_surface|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <div>
+                    <label for="{{ search_form.min_rooms.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Pièces min
+                    </label>
+                    {{ search_form.min_rooms|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <fieldset class="space-y-2">
+                    <legend class="text-sm font-medium text-gray-700">Équipements</legend>
+                    <label class="flex items-center gap-2 text-sm">
+                        {{ search_form.has_garage }} Garage
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        {{ search_form.has_garden }} Jardin
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        {{ search_form.has_pool }} Piscine
+                    </label>
+                </fieldset>
+
+                <div>
+                    <label for="{{ search_form.sort.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Trier
+                    </label>
+                    {{ search_form.sort|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition">
+                    Filtrer
+                </button>
+                <a href="{% url 'properties:list' %}"
+                   class="block text-center text-sm text-gray-600 hover:text-primary-500">
+                    Réinitialiser
+                </a>
+            </form>
+        </aside>
+
+        {# ---------- RÉSULTATS ---------- #}
+        <div class="lg:col-span-3">
+            {% if properties %}
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {% for property in properties %}
+                        {% include "properties/_card.html" with property=property %}
+                    {% endfor %}
+                </div>
+
+                {# Pagination #}
+                {% if is_paginated %}
+                    <nav class="mt-10 flex justify-center gap-2" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"
+                               class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">← Précédent</a>
+                        {% endif %}
+                        <span class="px-4 py-2 text-gray-700">
+                            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                        </span>
+                        {% if page_obj.has_next %}
+                            <a href="?{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}"
+                               class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Suivant →</a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
+                    <p class="text-xl text-gray-700 mb-2">Aucun bien ne correspond à vos critères.</p>
+                    <p class="text-gray-500 mb-6">Essayez d'élargir votre recherche.</p>
+                    <a href="{% url 'properties:list' %}"
+                       class="inline-block bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-3 rounded-lg">
+                        Voir tous les biens
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

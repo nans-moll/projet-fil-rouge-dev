@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip --version)",
+      "Bash(python -m venv .venv)",
+      "Bash(./.venv/Scripts/python.exe -m pip install --upgrade pip)",
+      "Bash(./.venv/Scripts/python.exe -m pip install \"Django>=5.0,<5.2\" Pillow django-environ djangorestframework django-widget-tweaks pytest-django)",
+      "Bash(./.venv/Scripts/python.exe manage.py makemigrations)",
+      "Bash(./.venv/Scripts/python.exe manage.py migrate)",
+      "Bash(./.venv/Scripts/python.exe manage.py seed_demo)",
+      "Bash(./.venv/Scripts/python.exe manage.py runserver 8000)",
+      "Bash(curl -s -o /dev/null -w \"Status: %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"/biens/ : %{http_code}\\\\n\" http://localhost:8000/biens/)",
+      "Bash(curl -s -o /dev/null -w \"/comptes/connexion/ : %{http_code}\\\\n\" http://localhost:8000/comptes/connexion/)",
+      "Bash(curl -s -o /dev/null -w \"/agences/ : %{http_code}\\\\n\" http://localhost:8000/agences/)",
+      "Bash(curl -s -o /dev/null -w \"/admin/ : %{http_code}\\\\n\" http://localhost:8000/admin/)",
+      "Bash(curl -s \"http://localhost:8000/biens/\")",
+      "Bash(curl -s -o /dev/null -w \"Fiche bien: %{http_code}\\\\n\" \"http://localhost:8000/biens/ymm00129-local-commercial-68-m2-paris/\")",
+      "Bash(curl -s -o /dev/null -w \"Demande visite: %{http_code}\\\\n\" \"http://localhost:8000/transactions/bien/129/visite/\")",
+      "Bash(./.venv/Scripts/python.exe -c 'import django; django.setup\\(\\)' -c ' *)",
+      "Bash(./.venv/Scripts/python.exe -c ' *)",
+      "Bash(./.venv/Scripts/python.exe -Bc ' *)",
+      "Bash(./.venv/Scripts/python.exe manage.py runserver 8000 --noreload)",
+      "Bash(curl -s -o /dev/null -w \"Home: %{http_code}\\\\n\" \"http://localhost:8000/\")",
+      "Bash(curl -s -o /dev/null -w \"Liste: %{http_code}\\\\n\" \"http://localhost:8000/biens/\")",
+      "Bash(curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt http://localhost:8000/comptes/connexion/ -o /tmp/login_page.html)",
+      "Read(//tmp/**)",
+      "Bash(./.venv/Scripts/python.exe -m pip install requests --quiet)",
+      "Bash(curl -s -o /dev/null -w \"Serveur: HTTP %{http_code}\\\\n\" http://localhost:8000/)",
+      "PowerShell(Start-Process \"http://localhost:8000/\")",
+      "Bash(./.venv/Scripts/python.exe manage.py add_photos --per-property=3 --limit=100)",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(curl -s http://localhost:8000/biens/)",
+      "Bash(./.venv/Scripts/python.exe manage.py add_photos --reset --per-property=4 --limit=100)",
+      "Bash(curl -s -o /dev/null -w \"Home: HTTP %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"Liste: HTTP %{http_code}\\\\n\" http://localhost:8000/biens/)"
+    ]
+  }
+}

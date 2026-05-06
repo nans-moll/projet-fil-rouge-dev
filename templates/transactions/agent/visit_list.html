@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Demandes de visite — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="mb-6 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Demandes de visite</h1>
+        <a href="{% url 'transactions:agent_dashboard' %}" class="text-sm text-primary-500 hover:underline">
+            ← Tableau de bord
+        </a>
+    </header>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left">
+                <tr>
+                    <th scope="col" class="px-4 py-3 font-semibold">Date demande</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Bien</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Demandeur</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Date souhaitée</th>
+                    <th scope="col" class="px-4 py-3 font-semibold">Statut</th>
+                    <th scope="col" class="px-4 py-3 font-semibold text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for v in visits %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-gray-600">{{ v.created_at|date:"d/m/Y H:i" }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ v.property.get_absolute_url }}" class="font-medium hover:text-primary-500">
+                                {{ v.property.reference }}
+                            </a>
+                            <p class="text-xs text-gray-500">{{ v.property.title|truncatechars:30 }}</p>
+                        </td>
+                        <td class="px-4 py-3">
+                            {{ v.full_name }}<br>
+                            <span class="text-xs text-gray-500">{{ v.email }}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if v.preferred_date %}{{ v.preferred_date|date:"d/m/Y" }}{% endif %}
+                            {% if v.preferred_time %} {{ v.preferred_time|time:"H:i" }}{% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs px-2 py-1 rounded
+                                {% if v.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif v.status == 'CONFIRMED' %}bg-blue-100 text-blue-800
+                                {% elif v.status == 'DONE' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ v.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <a href="{% url 'transactions:agent_visit_update' v.pk %}"
+                               class="text-primary-500 hover:underline">Traiter</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Aucune demande pour le moment.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

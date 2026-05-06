@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Analyse de marché — {{ SITE_NAME }}{% endblock %}
+
+{% block extra_head %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">📊 Analyse de marché</h1>
+        <p class="text-gray-600 mt-1">Vue d'ensemble des indicateurs clés et tendances.</p>
+    </header>
+
+    {# KPIs #}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-xl p-5 shadow-sm">
+            <p class="text-sm text-primary-100">Annonces actives</p>
+            <p class="text-3xl font-bold mt-1">{{ overview.active_listings|intcomma }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Biens vendus</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ overview.sold|intcomma }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Prix moyen actif</p>
+            <p class="text-2xl font-bold mt-1">{{ overview.avg_price_active|floatformat:0|intcomma }} €</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <p class="text-sm text-gray-500">Vues cumulées</p>
+            <p class="text-2xl font-bold mt-1">{{ overview.total_views|intcomma }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {# Graphique transactions par mois #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-4">Transactions sur 12 mois</h2>
+            <canvas id="chart-transactions" height="200" aria-label="Transactions par mois" role="img"></canvas>
+        </section>
+
+        {# Graphique répartition par type #}
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-4">Répartition par type</h2>
+            <canvas id="chart-types" height="200" aria-label="Répartition des biens par type" role="img"></canvas>
+        </section>
+    </div>
+
+    {# Top villes #}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-4">Top 10 villes (par volume)</h2>
+            <table class="w-full text-sm">
+                <thead class="text-left text-gray-500 border-b">
+                    <tr>
+                        <th scope="col" class="py-2">Ville</th>
+                        <th scope="col" class="py-2">Annonces</th>
+                        <th scope="col" class="py-2">Prix moyen</th>
+                        <th scope="col" class="py-2">Surface moy.</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for c in top_cities %}
+                        <tr>
+                            <td class="py-2 font-medium">{{ c.city }}</td>
+                            <td class="py-2">{{ c.count }}</td>
+                            <td class="py-2">{{ c.avg_price|floatformat:0|intcomma }} €</td>
+                            <td class="py-2">{{ c.avg_surface|floatformat:0 }} m²</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 class="text-xl font-bold mb-4">Biens populaires (vues)</h2>
+            <ol class="space-y-3">
+                {% for p in popular %}
+                    <li class="flex justify-between items-center text-sm">
+                        <a href="{{ p.get_absolute_url }}" class="hover:text-primary-500 flex-1 truncate pr-2">
+                            <span class="font-mono text-xs text-gray-500">{{ p.reference }}</span>
+                            {{ p.title|truncatechars:40 }}
+                        </a>
+                        <span class="font-semibold">{{ p.views_count }} vues</span>
+                    </li>
+                {% endfor %}
+            </ol>
+        </section>
+    </div>
+
+    {# Note vers le notebook #}
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="font-semibold text-blue-900 mb-2">📒 Analyses approfondies</h3>
+        <p class="text-sm text-blue-800">
+            Pour les analyses avancées (prédictions de prix, segmentation, corrélations),
+            utilisez le notebook Jupyter <code class="bg-white px-2 py-1 rounded">notebooks/market_analysis.ipynb</code>.
+        </p>
+    </div>
+</div>
+
+<script>
+    // Graphique transactions
+    new Chart(document.getElementById('chart-transactions'), {
+        type: 'line',
+        data: {
+            labels: {{ chart_months|safe }},
+            datasets: [{
+                label: 'Transactions',
+                data: {{ chart_counts|safe }},
+                borderColor: '#1e40af',
+                backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                tension: 0.3,
+                fill: true,
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    // Graphique types
+    new Chart(document.getElementById('chart-types'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_type_labels|safe }},
+            datasets: [{
+                data: {{ chart_type_counts|safe }},
+                backgroundColor: ['#1e40af', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#6b7280'],
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+</script>
+{% endblock %}

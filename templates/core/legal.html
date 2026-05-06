@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Mentions légales — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose">
+    <h1>Mentions légales</h1>
+
+    <h2>Éditeur</h2>
+    <p>
+        {{ SITE_NAME }} SAS — Siège social : Aix-en-Provence (France)<br>
+        SIRET : 000 000 000 00000<br>
+        Email : <a href="mailto:contact@ymmo.fr">contact@ymmo.fr</a>
+    </p>
+
+    <h2>Directeur de la publication</h2>
+    <p>Direction générale {{ SITE_NAME }}.</p>
+
+    <h2>Hébergement</h2>
+    <p>Site hébergé sur l'infrastructure interne du groupe (siège d'Aix-en-Provence).</p>
+
+    <h2>Données personnelles (RGPD)</h2>
+    <p>
+        Conformément au Règlement Général sur la Protection des Données (RGPD),
+        vous disposez d'un droit d'accès, de rectification et de suppression de vos
+        données personnelles. Pour exercer ce droit : <a href="mailto:dpo@ymmo.fr">dpo@ymmo.fr</a>.
+    </p>
+
+    <h2>Cookies</h2>
+    <p>
+        Ce site utilise uniquement des cookies techniques nécessaires à son
+        fonctionnement (session, authentification, CSRF).
+    </p>
+</div>
+{% endblock %}

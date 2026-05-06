@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Contact — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Nous contacter</h1>
+        <p class="text-gray-600">
+            Une question, un projet ? Notre équipe vous répond sous 48h.
+        </p>
+    </header>
+
+    <form method="post" class="bg-white rounded-xl p-8 shadow-sm border border-gray-100 space-y-5" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="p-3 bg-red-100 text-red-800 rounded">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Nom complet *
+                </label>
+                {{ form.full_name|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"|attr:"required" }}
+                {{ form.full_name.errors }}
+            </div>
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                </label>
+                {{ form.email|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"|attr:"required" }}
+                {{ form.email.errors }}
+            </div>
+        </div>
+
+        <div>
+            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Téléphone
+            </label>
+            {{ form.phone|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" }}
+        </div>
+
+        <div>
+            <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Sujet *
+            </label>
+            {{ form.subject|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"|attr:"required" }}
+        </div>
+
+        <div>
+            <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Message *
+            </label>
+            {{ form.message|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"|attr:"required" }}
+        </div>
+
+        <button type="submit"
+                class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition">
+            Envoyer mon message
+        </button>
+    </form>
+</div>
+{% endblock %}

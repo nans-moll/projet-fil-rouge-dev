@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ property.title }} — {{ property.city }} | {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}{{ property.description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    {# ---------- BREADCRUMB ---------- #}
+    <nav aria-label="Fil d'Ariane" class="text-sm text-gray-600 mb-4">
+        <ol class="flex flex-wrap gap-2">
+            <li><a href="{% url 'core:home' %}" class="hover:text-primary-500">Accueil</a></li>
+            <li aria-hidden="true">›</li>
+            <li><a href="{% url 'properties:list' %}" class="hover:text-primary-500">Biens</a></li>
+            <li aria-hidden="true">›</li>
+            <li><span class="text-gray-900">{{ property.reference }}</span></li>
+        </ol>
+    </nav>
+
+    {# ---------- TITRE ---------- #}
+    <header class="mb-6">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded">
+                {{ property.get_transaction_type_display }}
+            </span>
+            <span class="bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded">
+                {{ property.get_property_type_display }}
+            </span>
+            {% if property.energy_class %}
+                <span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded">
+                    DPE {{ property.energy_class }}
+                </span>
+            {% endif %}
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{{ property.title }}</h1>
+        <p class="text-lg text-gray-600">📍 {{ property.address }}, {{ property.postal_code }} {{ property.city }}</p>
+    </header>
+
+    {# ---------- GALERIE ---------- #}
+    <section class="mb-8" x-data="{ active: 0 }" aria-label="Galerie photos">
+        {% with photos=property.photos.all %}
+            {% if photos %}
+                <div class="aspect-[16/9] bg-gray-200 rounded-xl overflow-hidden mb-3">
+                    {% for photo in photos %}
+                        <img x-show="active === {{ forloop.counter0 }}"
+                             src="{{ photo.image.url }}"
+                             alt="{{ photo.caption|default:property.title }}"
+                             class="w-full h-full object-cover"
+                             loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+                    {% endfor %}
+                </div>
+                {% if photos.count > 1 %}
+                    <div class="grid grid-cols-4 md:grid-cols-6 gap-2">
+                        {% for photo in photos %}
+                            <button @click="active = {{ forloop.counter0 }}"
+                                    :class="active === {{ forloop.counter0 }} ? 'ring-2 ring-primary-500' : ''"
+                                    class="aspect-[4/3] rounded overflow-hidden focus:outline-none"
+                                    aria-label="Photo {{ forloop.counter }}">
+                                <img src="{{ photo.image.url }}" alt="" class="w-full h-full object-cover" loading="lazy">
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="aspect-[16/9] bg-gray-200 rounded-xl flex items-center justify-center text-gray-400">
+                    <p>Aucune photo disponible</p>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {# ---------- INFOS PRINCIPALES ---------- #}
+        <div class="lg:col-span-2 space-y-8">
+
+            {# Caractéristiques #}
+            <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Caractéristiques</h2>
+                <dl class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <dt class="text-sm text-gray-500">Surface</dt>
+                        <dd class="text-lg font-semibold">{{ property.surface }} m²</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Pièces</dt>
+                        <dd class="text-lg font-semibold">{{ property.rooms }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Chambres</dt>
+                        <dd class="text-lg font-semibold">{{ property.bedrooms }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm text-gray-500">Salles de bain</dt>
+                        <dd class="text-lg font-semibold">{{ property.bathrooms }}</dd>
+                    </div>
+                    {% if property.floor is not None %}
+                    <div>
+                        <dt class="text-sm text-gray-500">Étage</dt>
+                        <dd class="text-lg font-semibold">{{ property.floor }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if property.construction_year %}
+                    <div>
+                        <dt class="text-sm text-gray-500">Année de construction</dt>
+                        <dd class="text-lg font-semibold">{{ property.construction_year }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if property.land_surface %}
+                    <div>
+                        <dt class="text-sm text-gray-500">Terrain</dt>
+                        <dd class="text-lg font-semibold">{{ property.land_surface }} m²</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+
+                <h3 class="text-lg font-semibold mt-6 mb-3">Équipements</h3>
+                <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                    {% if property.has_garage %}<li>✅ Garage</li>{% endif %}
+                    {% if property.has_garden %}<li>✅ Jardin</li>{% endif %}
+                    {% if property.has_pool %}<li>✅ Piscine</li>{% endif %}
+                    {% if property.has_balcony %}<li>✅ Balcon / Terrasse</li>{% endif %}
+                    {% if property.has_elevator %}<li>✅ Ascenseur</li>{% endif %}
+                    {% if property.is_furnished %}<li>✅ Meublé</li>{% endif %}
+                </ul>
+            </section>
+
+            {# Description #}
+            <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Description</h2>
+                <div class="prose max-w-none text-gray-700 whitespace-pre-line">{{ property.description }}</div>
+            </section>
+
+            {# Localisation #}
+            <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Localisation</h2>
+                <p class="text-gray-700">{{ property.address }}<br>
+                {{ property.postal_code }} {{ property.city }}{% if property.region %}, {{ property.region }}{% endif %}</p>
+                {% if property.latitude and property.longitude %}
+                    <iframe class="w-full h-72 mt-4 rounded-lg border"
+                            title="Carte localisation"
+                            loading="lazy"
+                            src="https://www.openstreetmap.org/export/embed.html?bbox={{ property.longitude|add:'-0.01' }},{{ property.latitude|add:'-0.01' }},{{ property.longitude|add:'0.01' }},{{ property.latitude|add:'0.01' }}&layer=mapnik&marker={{ property.latitude }},{{ property.longitude }}">
+                    </iframe>
+                {% endif %}
+            </section>
+        </div>
+
+        {# ---------- SIDEBAR PRIX + CONTACT ---------- #}
+        <aside class="space-y-6">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 sticky top-20">
+                <p class="text-sm text-gray-500 mb-1">Prix de vente</p>
+                <p class="text-4xl font-bold text-primary-500 mb-1">
+                    {{ property.price|floatformat:0|intcomma }} €
+                </p>
+                <p class="text-sm text-gray-500 mb-4">
+                    {{ property.price_per_sqm|floatformat:0|intcomma }} €/m²
+                </p>
+
+                {% if property.monthly_charges %}
+                    <p class="text-sm text-gray-600 mb-4">
+                        Charges : {{ property.monthly_charges|floatformat:0|intcomma }} €/mois
+                    </p>
+                {% endif %}
+
+                <p class="text-xs text-gray-500 mb-6">
+                    Honoraires d'agence inclus : {{ property.agency_fees_percent }}%
+                    (soit {{ property.total_price_with_fees|floatformat:0|intcomma }} € total)
+                </p>
+
+                <div class="space-y-3">
+                    <a href="{% url 'transactions:request_visit' property.pk %}"
+                       class="block w-full text-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition">
+                        📅 Demander une visite
+                    </a>
+                    <a href="{% url 'transactions:request_info' property.pk %}"
+                       class="block w-full text-center bg-white border-2 border-primary-500 text-primary-500 hover:bg-primary-50 font-semibold py-3 rounded-lg transition">
+                        ✉ Demander des informations
+                    </a>
+                    {% if user.is_authenticated and user.is_client %}
+                        <form method="post" action="{% url 'properties:toggle_favorite' property.pk %}">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-lg transition">
+                                {% if is_favorite %}♥ Retirer des favoris{% else %}♡ Ajouter aux favoris{% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Agence #}
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 class="font-semibold text-gray-900 mb-3">Votre interlocuteur</h2>
+                <p class="text-sm text-gray-700 mb-1">Agence</p>
+                <a href="{{ property.agency.get_absolute_url }}" class="text-primary-500 font-semibold hover:underline">
+                    {{ property.agency.name }}
+                </a>
+                <p class="text-sm text-gray-600 mt-1">{{ property.agency.city }}</p>
+                <p class="text-sm text-gray-600 mt-2">📞 {{ property.agency.phone }}</p>
+                <p class="text-sm text-gray-600">✉ {{ property.agency.email }}</p>
+            </div>
+        </aside>
+    </div>
+
+    {# ---------- BIENS SIMILAIRES ---------- #}
+    {% if similar_properties %}
+        <section class="mt-16">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Biens similaires</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for prop in similar_properties %}
+                    {% include "properties/_card.html" with property=prop %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+</article>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Traiter la demande de visite — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+    <a href="{% url 'transactions:agent_visit_list' %}" class="text-sm text-primary-500 hover:underline mb-4 inline-block">
+        ← Retour aux demandes
+    </a>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Demande de visite</h1>
+        <p class="text-sm text-gray-600">
+            <a href="{{ object.property.get_absolute_url }}" class="text-primary-500 hover:underline">
+                {{ object.property.reference }}
+            </a> — {{ object.property.title }}
+        </p>
+        <hr class="my-4">
+        <dl class="space-y-2 text-sm">
+            <div class="grid grid-cols-3">
+                <dt class="text-gray-500">Demandeur</dt>
+                <dd class="col-span-2 font-medium">{{ object.full_name }}</dd>
+            </div>
+            <div class="grid grid-cols-3">
+                <dt class="text-gray-500">Email</dt>
+                <dd class="col-span-2"><a href="mailto:{{ object.email }}" class="text-primary-500">{{ object.email }}</a></dd>
+            </div>
+            <div class="grid grid-cols-3">
+                <dt class="text-gray-500">Téléphone</dt>
+                <dd class="col-span-2">{{ object.phone|default:"—" }}</dd>
+            </div>
+            <div class="grid grid-cols-3">
+                <dt class="text-gray-500">Date souhaitée</dt>
+                <dd class="col-span-2">
+                    {% if object.preferred_date %}{{ object.preferred_date|date:"d/m/Y" }}{% endif %}
+                    {% if object.preferred_time %} à {{ object.preferred_time|time:"H:i" }}{% endif %}
+                </dd>
+            </div>
+            {% if object.message %}
+                <div class="grid grid-cols-3">
+                    <dt class="text-gray-500">Message</dt>
+                    <dd class="col-span-2 italic">"{{ object.message }}"</dd>
+                </div>
+            {% endif %}
+        </dl>
+    </div>
+
+    <form method="post" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+            {{ form.status|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date confirmée</label>
+            {{ form.confirmed_date|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes internes</label>
+            {{ form.agent_notes|add_class:"w-full px-3 py-2 border border-gray-300 rounded-lg" }}
+        </div>
+        <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-2 rounded-lg">
+            Mettre à jour
+        </button>
+    </form>
+</div>
+{% endblock %}
