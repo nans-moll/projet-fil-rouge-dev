@@ -13,7 +13,7 @@ env/
 *.log
 db.sqlite3
 db.sqlite3-journal
-media/
+# media/ — inclus dans le repo pour partager les photos de démo
 staticfiles/
 .env
 
